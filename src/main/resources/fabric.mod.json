@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "chestlog",
+  "version": "${version}",
+  "name": "Chest Log",
+  "description": "Remembers your chests: shows what changed since you last opened one, who changed it (you or someone else), a history per chest and a search to find where an item is stored.",
+  "authors": [
+    "Dalkco"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/chest-log",
+    "sources": "https://github.com/Dalkco11/ChestLog",
+    "issues": "https://github.com/Dalkco11/ChestLog/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/chestlog/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.dalkco.chestlog.ChestLogClient"
+    ],
+    "modmenu": [
+      "com.dalkco.chestlog.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "chestlog.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": ">=26.3",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}
