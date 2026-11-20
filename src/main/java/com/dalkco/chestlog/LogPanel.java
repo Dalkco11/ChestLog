@@ -246,22 +246,6 @@ public final class LogPanel {
                 out.add(Line.item(e.getKey(), e.getValue()));
             }
         }
-        if (!s.record.coreProtect.isEmpty()) {
-            out.add(Line.header(Component.empty(), GRAY));
-            out.add(Line.header(Component.translatable("chestlog.cp.who", ItemUtil.ago(s.record.cpChecked)), CP_COLOR));
-            int n = 0;
-            for (ChestStore.Entry e : s.record.coreProtect) {
-                if (n++ >= 8) {
-                    out.add(Line.header(Component.translatable("chestlog.panel.more", s.record.coreProtect.size() - 8), GRAY));
-                    break;
-                }
-                out.add(Line.header(Component.translatable("chestlog.panel.entry", Component.literal(e.player),
-                        ItemUtil.ago(e.time)), 0xFFE6E6EE));
-                for (Map.Entry<String, Integer> d : e.delta.entrySet()) {
-                    out.add(Line.item(d.getKey(), d.getValue()));
-                }
-            }
-        }
         return out;
     }
 
@@ -370,6 +354,16 @@ public final class LogPanel {
     public static void setTab(int t) {
         tab = t;
         scroll = 0;
+    }
+
+    /** Mouse wheel at GUI position (x, y): scroll the panel if the cursor is over it. */
+    public static boolean scrollAt(double x, double y, double amount) {
+        Rect p = panel;
+        if (p == null || !p.contains(x, y) || LogConfig.get().collapsed) {
+            return false;
+        }
+        scroll -= amount * ROW;
+        return true;
     }
 
     public static boolean scrollBy(double amount) {
