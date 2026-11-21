@@ -264,31 +264,13 @@ public final class LogPanel {
         // one flat list: "+amount [icon] who  time", newest first
         String me = Minecraft.getInstance().player == null ? ""
                 : Minecraft.getInstance().player.getName().getString();
-        // CoreProtect rows, used to hide our own nameless rows that describe the same change
-        List<long[]> cpRows = new ArrayList<>();
-        List<String> cpItems = new ArrayList<>();
-        for (ChestStore.Entry e : s.record.coreProtect) {
-            for (Map.Entry<String, Integer> d : e.delta.entrySet()) {
-                cpRows.add(new long[]{e.time, d.getValue()});
-                cpItems.add(d.getKey());
-            }
-        }
         for (ChestStore.Entry e : all) {
-            if (!e.cp && !cpRows.isEmpty()) {
+            if (!e.cp && !s.record.coreProtect.isEmpty()) {
+                // our own nameless row covers the period since..time; if CoreProtect's rows for the same item in
+                // that period add up to the same change (e.g. +28 and −29 = −1), the named rows replace it
                 Map<String, Integer> left = new java.util.LinkedHashMap<>();
                 for (Map.Entry<String, Integer> d : e.delta.entrySet()) {
-                    int match = -1;
-                    for (int i = 0; i < cpRows.size(); i++) {
-                        if (cpItems.get(i).equals(d.getKey()) && cpRows.get(i)[1] == d.getValue()
-                                && Math.abs(cpRows.get(i)[0] - e.time) < 30 * 60_000L) {
-                            match = i;
-                            break;
-                        }
-                    }
-                    if (match >= 0) {
-                        cpRows.remove(match);
-                        cpItems.remove(match);
-                    } else {
+                    if (!explainedByCoreProtect(s.record, e, d.getKey(), d.getValue())) {
                         left.put(d.getKey(), d.getValue());
                     }
                 }
@@ -318,6 +300,29 @@ public final class LogPanel {
             }
         }
         return out;
+    }
+
+    /**
+     * True when the CoreProtect rows for {@code item} inside the entry's period add up to {@code amount}.
+     * CoreProtect times are rounded (".15/d" is ±15 min), so the period is widened a little.
+     */
+    private static boolean explainedByCoreProtect(ChestStore.Record r, ChestStore.Entry e, String item, int amount) {
+        long tolerance = 20 * 60_000L;
+        long from = (e.since > 0 ? e.since : e.time - 6 * 3_600_000L) - tolerance;
+        long to = e.time + tolerance;
+        int sum = 0;
+        boolean any = false;
+        for (ChestStore.Entry c : r.coreProtect) {
+            if (c.time < from || c.time > to) {
+                continue;
+            }
+            Integer v = c.delta.get(item);
+            if (v != null) {
+                sum += v;
+                any = true;
+            }
+        }
+        return any && sum == amount;
     }
 
     // ------------------------------------------------------------------ clickable areas (real widgets)

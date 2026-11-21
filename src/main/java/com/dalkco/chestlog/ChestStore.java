@@ -24,6 +24,8 @@ public final class ChestStore {
     /** One change: items that came in (+) or went out (−). */
     public static final class Entry {
         public long time;
+        /** start of the period this entry covers (the change happened between since and time); 0 = unknown */
+        public long since;
         /** true = while you had it open, false = found when you opened it */
         public boolean you;
         /** from CoreProtect: who did it */

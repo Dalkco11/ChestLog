@@ -154,7 +154,7 @@ public final class Tracker {
             first = k.first();
             if (!fresh.isEmpty()) {
                 // something really changed during the check: log it as usual
-                addHistory(r, false, fresh, now);
+                addHistory(r, false, fresh, r.lastSeen, now);
             }
             r.items = items;
             r.lastSeen = now;
@@ -172,7 +172,7 @@ public final class Tracker {
             ChestStore.put(p.key(), r);
         }
         if (!changes.isEmpty()) {
-            addHistory(r, false, changes, now);
+            addHistory(r, false, changes, previous, now);
         }
         r.items = items;
         r.lastSeen = now;
@@ -191,7 +191,7 @@ public final class Tracker {
         Map<String, Integer> yours = ItemUtil.diff(s.openItems, now);
         long t = System.currentTimeMillis();
         if (!yours.isEmpty() && LogConfig.get().logOwn) {
-            addHistory(s.record, true, yours, t);
+            addHistory(s.record, true, yours, s.record.lastSeen, t);
         }
         s.record.items = now;
         s.record.lastSeen = t;
@@ -214,9 +214,10 @@ public final class Tracker {
         return ItemUtil.count(stacks, s.size);
     }
 
-    private static void addHistory(ChestStore.Record r, boolean you, Map<String, Integer> delta, long time) {
+    private static void addHistory(ChestStore.Record r, boolean you, Map<String, Integer> delta, long since, long time) {
         ChestStore.Entry e = new ChestStore.Entry();
         e.time = time;
+        e.since = since;
         e.you = you;
         e.delta.putAll(delta);
         r.history.add(0, e);
